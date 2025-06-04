@@ -8,6 +8,7 @@ public class GameManager : MonoBehaviourPunCallbacks
     public GameObject hostPlayerPrefab;
     public GameObject clientPlayerPrefab;
 
+    [SerializeField] private Camera EditorCamera;
     private SpawnPoint[] availableSpawnPoints;
 
     [SerializeField] private GameObject singlePlayerPrefab;
@@ -36,13 +37,17 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     void Start()
     {
-        if (isSinglePlayerTestMode)
+        if (EditorCamera != null)
         {
-            // Offline mod için test spawn'ı
-            Debug.Log("Tek oyunculu test modu aktif.");
-            SpawnSinglePlayer();
-            return;
+            EditorCamera.gameObject.SetActive(false);
         }
+        if (isSinglePlayerTestMode)
+            {
+                // Offline mod için test spawn'ı
+                Debug.Log("Tek oyunculu test modu aktif.");
+                SpawnSinglePlayer();
+                return;
+            }
 
         if (!PhotonNetwork.InRoom)
         {
