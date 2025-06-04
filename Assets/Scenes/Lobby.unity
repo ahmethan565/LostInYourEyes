@@ -825,7 +825,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1150995891}
   m_HandleRect: {fileID: 1150995890}
   m_Direction: 0
-  m_Value: 1
+  m_Value: 0
   m_Size: 0.99999994
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -4035,8 +4035,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d05884953311e50458464ba9d7d38e90, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  editorTargetFPS: 60
-  buildTargetFPS: 60
+  editorTargetFPS: 165
+  buildTargetFPS: 165
   limitWhenInBackground: 1
   backgroundTargetFPS: 15
 --- !u!4 &1319203384

@@ -2097,7 +2097,7 @@ MonoBehaviour:
   player2StatusText: {fileID: 1857970109}
   closeRoomButton: {fileID: 27751291}
   leaveRoomButton: {fileID: 1593446872}
-  gameSceneName: Game
+  gameSceneName: Puzzle1
 --- !u!4 &1442184256
 Transform:
   m_ObjectHideFlags: 0
@@ -2165,9 +2165,9 @@ RectTransform:
   m_Children:
   - {fileID: 1102892725}
   - {fileID: 953164633}
-  - {fileID: 1189823610}
   - {fileID: 1283746520}
   - {fileID: 1904472209}
+  - {fileID: 1189823610}
   m_Father: {fileID: 1840304223}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}

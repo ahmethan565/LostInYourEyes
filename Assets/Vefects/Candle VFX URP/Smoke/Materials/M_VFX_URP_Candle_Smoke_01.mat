@@ -84,3 +84,4 @@ Material:
     - _SmokeUVPan: {r: 0, g: -0.2, b: 0, a: 0}
     - _SmokeUVScale: {r: 1, g: 0.3, b: 0, a: 0}
   m_BuildTextureStacks: []
+  m_AllowLocking: 1
