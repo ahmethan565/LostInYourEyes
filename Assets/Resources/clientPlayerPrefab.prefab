@@ -241,6 +241,8 @@ MonoBehaviour:
   crouchHeight: 1
   crouchSpeedMultiplier: 0.5
   crouchCameraOffset: -0.5
+  sprintDuration: 0
+  slideTriggerTime: 1
   mouseSensitivity: 100
   cameraRoot: {fileID: 3047744437776773598}
   clampVerticalRotation: 1

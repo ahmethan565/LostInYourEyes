@@ -4,8 +4,14 @@ using UnityEngine;
 public class PlayerRunningState : PlayerState
 {
     private float originalMoveSpeed; // Koşma öncesi hızı saklamak için
+    private float sprintDuration = 0f;
+    private float slideTriggerTime = 1.0f; // Örn: 1 saniye sonra slide açılabilir
 
-    public PlayerRunningState(FPSPlayerController player, PlayerFSM fsm) : base(player, fsm) { }
+    public PlayerRunningState(FPSPlayerController player, PlayerFSM fsm) : base(player, fsm)
+    {
+        sprintDuration = player.sprintDuration;
+        slideTriggerTime = player.slideTriggerTime; // Örn: 1 saniye sonra slide açılabilir
+    }
 
     public override void Enter()
     {
@@ -13,11 +19,14 @@ public class PlayerRunningState : PlayerState
         // Koşma hızını ayarla (Örn: moveSpeed'in 1.5 katı)
         originalMoveSpeed = player.moveSpeed; // Mevcut hızı kaydet
         player.moveSpeed = player.sprintSpeed; // Koşma hızına ayarla
+
         // Animasyon tetikleyici: player.animator.SetBool("IsRunning", true);
     }
 
     public override void Execute()
     {
+        sprintDuration += Time.deltaTime;
+
         // 1. Zıplama Geçişi
         if (Input.GetButtonDown("Jump") && player.isGrounded)
         {
@@ -27,9 +36,17 @@ public class PlayerRunningState : PlayerState
         // 2. Çömelme Geçişi
         if (Input.GetKeyDown(KeyCode.LeftControl))
         {
-            fsm.ChangeState(typeof(PlayerCrouchingState));
+            if (sprintDuration >= slideTriggerTime)
+            {
+                fsm.ChangeState(typeof(PlayerSlidingState));
+            }
+            else
+            {
+                fsm.ChangeState(typeof(PlayerCrouchingState));
+            }
             return;
         }
+
 
 
         // 3. Koşma Tuşu Bırakıldıysa veya Hareket Durduysa
@@ -62,6 +79,7 @@ public class PlayerRunningState : PlayerState
     public override void Exit()
     {
         Debug.Log("Running durumundan çıkıldı.");
+        sprintDuration = 0f;
         player.moveSpeed = originalMoveSpeed; // Hızı eski haline getir
         // Animasyon tetikleyici: player.animator.SetBool("IsRunning", false);
     }

@@ -18,6 +18,9 @@ public class FPSPlayerController : MonoBehaviourPun, IPunObservable
     public float crouchSpeedMultiplier = 0.5f; // Çömelirken hız çarpanı
     public float crouchCameraOffset = -0.5f; // Kameranın ne kadar aşağı ineceği
 
+    [Header("Sprint Ayarları")]
+    public float sprintDuration = 0f;
+    public float slideTriggerTime = 1.0f; // Örn: 1 saniye sonra slide açılabilir
     [Header("Kamera Ayarları")]
     public float mouseSensitivity = 100f;
     public Transform cameraRoot;
@@ -72,6 +75,7 @@ public class FPSPlayerController : MonoBehaviourPun, IPunObservable
             playerFSM.AddState(new PlayerJumpingState(this, playerFSM));
             playerFSM.AddState(new PlayerRunningState(this, playerFSM)); // YENİ
             playerFSM.AddState(new PlayerCrouchingState(this, playerFSM)); // YENİ
+            playerFSM.AddState(new PlayerSlidingState(this, playerFSM)); // YENİ
 
             playerFSM.ChangeState(typeof(PlayerIdleState)); // Başlangıç durumu
         }
