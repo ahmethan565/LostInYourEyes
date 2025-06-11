@@ -1,12 +1,22 @@
 using UnityEngine;
 using Photon.Pun;
+using UnityEngine.InputSystem.XR.Haptics;
 
 public class FPSPlayerController : MonoBehaviourPun, IPunObservable
 {
+
+    public string currentState;
+
     [Header("Hareket Ayarları")]
     public float moveSpeed = 5f;
     public float jumpForce = 8f;
     public float gravityValue = -20f;
+    public float sprintSpeed;
+
+    [Header("Çömelme Ayarları")]
+    public float crouchHeight = 1.0f; // Çömelme yüksekliği
+    public float crouchSpeedMultiplier = 0.5f; // Çömelirken hız çarpanı
+    public float crouchCameraOffset = -0.5f; // Kameranın ne kadar aşağı ineceği
 
     [Header("Kamera Ayarları")]
     public float mouseSensitivity = 100f;
@@ -18,13 +28,17 @@ public class FPSPlayerController : MonoBehaviourPun, IPunObservable
     [Header("Ağ Ayarları")]
     public float remoteSmoothFactor = 15f;
 
-    private CharacterController controller;
-    private Vector3 playerVelocity; // Hem input kaynaklı hem yer çekimi kaynaklı dikey hızı içerir
+    public CharacterController controller;
+    public Vector3 playerVelocity; // Hem input kaynaklı hem yer çekimi kaynaklı dikey hızı içerir
     private float xRotation = 0f;
+
+    // FSM ile ilgili eklemeler
+    private PlayerFSM playerFSM;
+    public bool isGrounded; // Yerel oyuncu için yere değme durumu
 
     // Ağ üzerinden gelen veriler
     private float network_xRotation;
-    private bool network_isGrounded;
+    // network_isGrounded artık doğrudan kullanılmayacak, SmoothRemotePlayerData'da dolaylı etki edecek
     private Vector3 networkPosition;
     private Quaternion networkRotation;
 
@@ -50,57 +64,41 @@ public class FPSPlayerController : MonoBehaviourPun, IPunObservable
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
             SetupLocalPlayerCamera();
+
+            // FSM'yi başlat
+            playerFSM = new PlayerFSM();
+            playerFSM.AddState(new PlayerIdleState(this, playerFSM));
+            playerFSM.AddState(new PlayerWalkingState(this, playerFSM));
+            playerFSM.AddState(new PlayerJumpingState(this, playerFSM));
+            playerFSM.AddState(new PlayerRunningState(this, playerFSM)); // YENİ
+            playerFSM.AddState(new PlayerCrouchingState(this, playerFSM)); // YENİ
+
+            playerFSM.ChangeState(typeof(PlayerIdleState)); // Başlangıç durumu
         }
     }
 
     void Update()
     {
-        // Sadece yerel oyuncunun logic'ini çalıştır
         if (photonView.IsMine)
         {
-            // Menü açık mı kontrol et (Singleton veya Statik değişkene göre)
+            // Yere değme durumunu her zaman güncelle
+            isGrounded = controller.isGrounded;
+            currentState = playerFSM.GetCurrentState().ToString();
+            // Menü açık mı kontrol et
             bool menuIsOpen = PauseMenuManager.Instance != null && PauseMenuManager.Instance.isMenuOpen;
-            // Eğer Statik kullandıysanız: bool menuIsOpen = PauseMenuManager.isMenuOpen;
 
-            // Yere değme durumu ve yer çekimi/dikey hız uygulaması her zaman çalışmalı (inputtan bağımsız)
-            bool isGrounded = controller.isGrounded;
-            if (isGrounded && playerVelocity.y < 0)
-            {
-                playerVelocity.y = -0.5f; // Yere değer değmez dikey hızı sıfırla
-            }
-
-            // Yer çekimini uygula (inputtan bağımsız)
-            playerVelocity.y += gravityValue * Time.deltaTime;
-
-            // Yatay hareket vektörünü inputtan al. Menü açıkken sıfır olacak.
-            Vector3 horizontalMove = Vector3.zero;
-
-            // Eğer menü açık değilse input'u işle
             if (!menuIsOpen)
             {
-                // Yatay/Dikey inputu al
-                horizontalMove = GetInputMoveVector();
-
-                // Zıplama inputunu işle
-                HandleJumpInput(isGrounded);
-
-                // Fare ile bakışı işle
-                HandleLocalPlayerMouseLook();
+                playerFSM.Update(); // FSM'nin mevcut durumunu güncelle
+                HandleLocalPlayerMouseLook(); // Fare ile bakışı FSM'den bağımsız tutabiliriz
             }
-            // else: Menü açıksa, horizontalMove sıfır kalır, zıplama inputu alınmaz, bakış işlenmez.
-
-            // Toplam hareket vektörü: Yatay input (veya sıfır) + Dikey velocity (yer çekimi + zıplama)
-            // playerVelocity.y zaten yer çekimi tarafından güncellendi
-            Vector3 totalMove = horizontalMove + new Vector3(0, playerVelocity.y, 0);
-
-
-            // Karakteri hareket ettir
-            if (controller != null && controller.enabled) // Controller'ın aktif olduğundan emin ol
+            else
             {
-                controller.Move(totalMove * Time.deltaTime);
+                // Menü açıksa hareket ve zıplama inputu işlenmez, FSM güncellenmez.
+                // Karakterin yer çekimini uygulamaya devam etmesi gerekebilir.
+                ApplyGravity();
+                MoveCharacter(); // Sadece yer çekimi etkisiyle hareket
             }
-
-
         }
         else // Remote oyuncu ise
         {
@@ -108,29 +106,61 @@ public class FPSPlayerController : MonoBehaviourPun, IPunObservable
         }
     }
 
-    // Sadece yatay/dikey input vektörünü döndüren yardımcı metot
-    private Vector3 GetInputMoveVector()
+    // --- FSM Tarafından Erişilecek Yardımcı Metotlar ---
+
+    // Sadece yatay/dikey input vektörünü döndüren yardımcı metot (public)
+    public Vector3 GetInputMoveVector()
     {
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
         Vector3 move = (transform.right * h + transform.forward * v);
-        if (move.magnitude > 1f) move.Normalize(); // Çapraz harekette hızı aşmamak için
-        return move * moveSpeed; // Hız ile çarpılmış input vektörünü döndür
+        if (move.magnitude > 1f) move.Normalize();
+        return move * moveSpeed;
     }
 
-    // Sadece zıplama inputunu işleyen yardımcı metot
-    private void HandleJumpInput(bool isGrounded)
+    // Sadece zıplama gücünü uygulayan yardımcı metot (public)
+    public void HandleJumpInput()
     {
-        if (Input.GetButtonDown("Jump") && isGrounded)
+        if (isGrounded) // Sadece yere değiyorsa zıplasın (durum zaten kontrol etmeli ama burada da emin olalım)
         {
             playerVelocity.y = Mathf.Sqrt(jumpForce * -2f * gravityValue);
         }
     }
 
-    // Eski HandleLocalPlayerMovement metodu artık kullanılmıyor
+    // Yer çekimini uygulayan yardımcı metot (public)
+    public void ApplyGravity()
+    {
+        if (isGrounded && playerVelocity.y < 0)
+        {
+            playerVelocity.y = -0.5f; // Yere değer değmez dikey hızı sıfırla
+        }
+        playerVelocity.y += gravityValue * Time.deltaTime;
+    }
 
-    // ... (Diğer metotlar aynı kalır)
+    // Yatay hareketi uygulayan yardımcı metot (public)
+    public void ApplyHorizontalMovement(Vector3 horizontalMove)
+    {
+        // FSM durumları tarafından çağrılırken yatay hareket doğrudan CharacterController'a uygulanacak
+        // playerVelocity.x ve .z'yi kullanmak yerine doğrudan Move metodu içinde ele alınabilir.
+        // Ancak daha temiz bir ayrım için, FSM'de sadece input alınır, burada doğrudan uygulanır.
+        // Burada playerVelocity.x/z'yi güncellemiyoruz, çünkü totalMove'da birleştirilecek.
+        // Bu fonksiyon sadece hareket vektörünü hesaplar.
+    }
 
+    // Karakteri gerçekten hareket ettiren yardımcı metot (public)
+    public void MoveCharacter()
+    {
+        Vector3 horizontalMovement = GetInputMoveVector(); // Her kare yeniden hesapla
+        Vector3 totalMove = horizontalMovement + new Vector3(0, playerVelocity.y, 0);
+
+        if (controller != null && controller.enabled)
+        {
+            controller.Move(totalMove * Time.deltaTime);
+        }
+    }
+
+
+    // --- Mevcut Diğer Metotlar (Aynı Kalır) ---
     void SetupLocalPlayerCamera()
     {
         if (cameraRoot != null)
@@ -176,7 +206,6 @@ public class FPSPlayerController : MonoBehaviourPun, IPunObservable
         else Debug.LogWarning("cameraRoot atanmamış! Dikey bakış yapılamadı.");
     }
 
-
     void SmoothRemotePlayerData()
     {
         transform.position = Vector3.Lerp(transform.position, networkPosition, Time.deltaTime * remoteSmoothFactor);
@@ -197,7 +226,7 @@ public class FPSPlayerController : MonoBehaviourPun, IPunObservable
             stream.SendNext(transform.position);
             stream.SendNext(transform.rotation);
             stream.SendNext(xRotation);
-            // İsteğe bağlı: Dikey hızı da gönderebilirsiniz.
+            // playerVelocity.y'yi de göndermek isteyebilirsiniz, özellikle zıplama animasyonları için
             // stream.SendNext(playerVelocity.y);
         }
         else
@@ -206,7 +235,7 @@ public class FPSPlayerController : MonoBehaviourPun, IPunObservable
             networkRotation = (Quaternion)stream.ReceiveNext();
             network_xRotation = (float)stream.ReceiveNext();
             // Eğer gönderiyorsanız:
-            // playerVelocity.y = (float)stream.ReceiveNext(); // Remote için playerVelocity.y'yi günceller (opsiyonel)
+            // playerVelocity.y = (float)stream.ReceiveNext();
         }
     }
 }

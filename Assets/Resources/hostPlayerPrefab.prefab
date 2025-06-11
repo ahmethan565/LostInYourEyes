@@ -233,15 +233,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dba61a6866a39814b9eace6280a2835c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentState: 
   moveSpeed: 8
   jumpForce: 3
   gravityValue: -20
+  sprintSpeed: 20
+  crouchHeight: 1
+  crouchSpeedMultiplier: 0.5
+  crouchCameraOffset: -0.5
   mouseSensitivity: 100
   cameraRoot: {fileID: 3047744437776773598}
   clampVerticalRotation: 1
   minVerticalAngle: -90
   maxVerticalAngle: 90
   remoteSmoothFactor: 15
+  controller: {fileID: 2095089406744316125}
+  playerVelocity: {x: 0, y: 0, z: 0}
+  isGrounded: 0
 --- !u!1 &8809591538172285921
 GameObject:
   m_ObjectHideFlags: 0
