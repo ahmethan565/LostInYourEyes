@@ -4,8 +4,11 @@ using UnityEngine.UI;
 using TMPro;
 using Random = UnityEngine.Random;
 using System.Collections;
+using Photon.Pun;
+using Photon.Realtime;
+using ExitGames.Client.Photon;
 
-public class NoteSpawnerUI : MonoBehaviour
+public class NoteSpawnerUI : MonoBehaviourPunCallbacks
 {
     public static NoteSpawnerUI Instance;
 
@@ -47,6 +50,12 @@ public class NoteSpawnerUI : MonoBehaviour
         UpdateScoreUI();
         Debug.Log(points);
 
+        if (points >= 400 && !PhotonNetwork.LocalPlayer.CustomProperties.ContainsKey("Reached400"))
+        {
+            ExitGames.Client.Photon.Hashtable props = new ExitGames.Client.Photon.Hashtable() { { "Reached400", true } };
+            PhotonNetwork.LocalPlayer.SetCustomProperties(props);
+        }
+
         StartCoroutine(UpdateSpawnInterval());
     }
 
@@ -63,7 +72,7 @@ public class NoteSpawnerUI : MonoBehaviour
             RestartSpawn();
         }
         else if (points == 100)
-        {   
+        {
             spawnInterval = 10f;
             DestroyAllWithTag();
             RestartSpawn();
@@ -73,7 +82,7 @@ public class NoteSpawnerUI : MonoBehaviour
         }
 
         else if (points == 200)
-        {   
+        {
             spawnInterval = 10f;
             DestroyAllWithTag();
             RestartSpawn();
@@ -123,12 +132,43 @@ public class NoteSpawnerUI : MonoBehaviour
     }
 
     void DestroyAllWithTag()
-{
-    GameObject[] objectsToDestroy = GameObject.FindGameObjectsWithTag("Note");
-
-    foreach (GameObject obj in objectsToDestroy)
     {
-        Destroy(obj);
+        GameObject[] objectsToDestroy = GameObject.FindGameObjectsWithTag("Note");
+
+        foreach (GameObject obj in objectsToDestroy)
+        {
+            Destroy(obj);
+        }
     }
-}
+
+    public override void OnPlayerPropertiesUpdate(Player targetPlayer, ExitGames.Client.Photon.Hashtable changedProps)
+    {
+        if (changedProps.ContainsKey("Reached400"))
+        {
+            CheckIfBothPlayersReached400();
+        }
+    }
+
+    private void CheckIfBothPlayersReached400()
+    {
+        bool allReached = true;
+        foreach (Player player in PhotonNetwork.PlayerList)
+        {
+            if (!player.CustomProperties.TryGetValue("Reached400", out object value) || !(bool)value)
+            {
+                allReached = false;
+                break;
+            }
+        }
+
+        if (allReached)
+        {
+            photonView.RPC("PuzzleSolved", RpcTarget.All);
+        }
+    }
+
+    void PuzzleSolved()
+    {
+        Debug.Log("Both two players reached 400 points. pzulle solved.");
+    }
 }
