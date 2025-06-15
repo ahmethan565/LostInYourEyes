@@ -26,6 +26,19 @@ public class NoteSpawnerUI : MonoBehaviourPunCallbacks
 
     public TMP_Text pointsText;
 
+    private bool FPointsBool = false;
+    private bool SPointsBool = false;
+    private bool TPointsBool = false;
+    private bool FoPointsBool = false;
+
+    public TMP_Text fBadge;
+    public TMP_Text sBadge;
+    public TMP_Text tBadge;
+
+    private Canvas canvas;
+
+    public float waitTime;
+
     // public Note Note { get => note; set => note = value; };
 
     void Awake()
@@ -38,6 +51,7 @@ public class NoteSpawnerUI : MonoBehaviourPunCallbacks
         noteScript = GetComponent<Note>();
         StartSpawn();
         points = 0;
+        canvas = GetComponentInParent<Canvas>();
     }
 
     public void AddPoints(float amount)
@@ -62,34 +76,48 @@ public class NoteSpawnerUI : MonoBehaviourPunCallbacks
     IEnumerator UpdateSpawnInterval()
     {
 
-        if (points == 50)
+        if (points >= 50 && FPointsBool == false)
         {
-            spawnInterval = 10f;
+            spawnInterval = waitTime;
             DestroyAllWithTag();
             RestartSpawn();
-            yield return new WaitForSeconds(10);
+            fBadge.gameObject.SetActive(true);
+            yield return new WaitForSeconds(waitTime);
             spawnInterval = 0.8f;
             RestartSpawn();
+            FPointsBool = true;
+            fBadge.gameObject.SetActive(false);
         }
-        else if (points == 100)
+        else if (points >= 100 && SPointsBool == false)
         {
-            spawnInterval = 10f;
+            spawnInterval = waitTime;
             DestroyAllWithTag();
             RestartSpawn();
-            yield return new WaitForSeconds(10);
+            sBadge.gameObject.SetActive(true);
+            yield return new WaitForSeconds(waitTime);
             spawnInterval = 0.7f;
             RestartSpawn();
+            SPointsBool = true;
+            sBadge.gameObject.SetActive(false);
         }
 
-        else if (points == 200)
+        else if ((points == 200 && TPointsBool == false) || (points == 205 && TPointsBool == false))
         {
-            spawnInterval = 10f;
+            spawnInterval = waitTime;
             DestroyAllWithTag();
             RestartSpawn();
-            yield return new WaitForSeconds(10);
+            tBadge.gameObject.SetActive(true);
+            yield return new WaitForSeconds(waitTime);
             spawnInterval = 0.6f;
             RestartSpawn();
+            TPointsBool = true;
+            tBadge.gameObject.SetActive(false);
         }
+
+        // else if (points == 400)
+        // {
+        //     Destroy(canvas);
+        // }
     }
 
     void UpdateScoreUI()
@@ -164,6 +192,7 @@ public class NoteSpawnerUI : MonoBehaviourPunCallbacks
         if (allReached)
         {
             photonView.RPC("PuzzleSolved", RpcTarget.All);
+            Destroy(canvas);
         }
     }
 
