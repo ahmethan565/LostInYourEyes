@@ -39,6 +39,8 @@ public class NoteSpawnerUI : MonoBehaviourPunCallbacks
 
     public float waitTime;
 
+    public GameObject fullPointsPanel;
+
     // public Note Note { get => note; set => note = value; };
 
     void Awake()
@@ -114,10 +116,11 @@ public class NoteSpawnerUI : MonoBehaviourPunCallbacks
             tBadge.gameObject.SetActive(false);
         }
 
-        // else if (points == 400)
-        // {
-        //     Destroy(canvas);
-        // }
+        else if (points >= 80)
+        {
+            FullPointsFunction();
+            // Destroy(canvas);
+        }
     }
 
     void UpdateScoreUI()
@@ -199,5 +202,35 @@ public class NoteSpawnerUI : MonoBehaviourPunCallbacks
     void PuzzleSolved()
     {
         Debug.Log("Both two players reached 400 points. pzulle solved.");
+    }
+
+    void FullPointsFunction()
+    {
+        if (!FoPointsBool)
+        {
+            fullPointsPanel.SetActive(true);
+            spawnInterval = 60;
+            DestroyAllWithTag();
+            RestartSpawn();
+            FoPointsBool = true;
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+        }
+    }
+
+    public void resumeAfterFullPoints()
+    {
+        fullPointsPanel.SetActive(false);
+        spawnInterval = 0.6f;
+        RestartSpawn();
+        Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
+    }
+
+    public void quitAfterFullPoints()
+    {
+        Destroy(canvas);
+        Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
     }
 }
