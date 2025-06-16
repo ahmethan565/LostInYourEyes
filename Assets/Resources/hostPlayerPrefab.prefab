@@ -492,7 +492,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerCamera: {fileID: 3837930629442470111}
-  interactRange: 7
+  interactRange: 11
   interactableLayerMask:
     serializedVersion: 2
     m_Bits: 64
