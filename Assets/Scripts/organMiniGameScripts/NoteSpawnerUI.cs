@@ -234,9 +234,11 @@ public class NoteSpawnerUI : MonoBehaviourPunCallbacks
         }
     }
 
+    [PunRPC]
     void PuzzleSolved()
     {
         Debug.Log("Both two players reached 400 points. pzulle solved.");
+
     }
 
     void FullPointsFunction()
