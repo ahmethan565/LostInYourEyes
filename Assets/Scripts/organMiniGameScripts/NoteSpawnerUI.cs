@@ -12,16 +12,20 @@ public class NoteSpawnerUI : MonoBehaviourPunCallbacks
 {
     public static NoteSpawnerUI Instance;
 
+    [Header("A")]
     public GameObject notePrefab;
     public Transform[] columns;
 
     public string[] keysTexts = { "W", "A", "S", "D", "\u2190", "\u2191", "\u2192", "\u2193" };
 
+    [Header("B")]
     public float spawnInterval;
     public bool isInvoking;
+    public float waitTime;
 
     private float points;
 
+[Header("C")]
     public Note noteScript;
 
     public TMP_Text pointsText;
@@ -31,13 +35,20 @@ public class NoteSpawnerUI : MonoBehaviourPunCallbacks
     private bool TPointsBool = false;
     private bool FoPointsBool = false;
 
+    [Header("D")]
     public TMP_Text fBadge;
     public TMP_Text sBadge;
     public TMP_Text tBadge;
 
     private Canvas canvas;
 
-    public float waitTime;
+    [Header("E")]
+    public GameObject Coin1;
+    public GameObject Coin2;
+    public GameObject Coin3;
+    public GameObject Coin4;
+    public Image fillingImage;
+
 
     public GameObject fullPointsPanel;
 
@@ -84,6 +95,7 @@ public class NoteSpawnerUI : MonoBehaviourPunCallbacks
             DestroyAllWithTag();
             RestartSpawn();
             fBadge.gameObject.SetActive(true);
+            Coin1.gameObject.SetActive(true);
             yield return new WaitForSeconds(waitTime);
             spawnInterval = 0.8f;
             RestartSpawn();
@@ -96,6 +108,7 @@ public class NoteSpawnerUI : MonoBehaviourPunCallbacks
             DestroyAllWithTag();
             RestartSpawn();
             sBadge.gameObject.SetActive(true);
+            Coin2.gameObject.SetActive(true);
             yield return new WaitForSeconds(waitTime);
             spawnInterval = 0.7f;
             RestartSpawn();
@@ -109,6 +122,7 @@ public class NoteSpawnerUI : MonoBehaviourPunCallbacks
             DestroyAllWithTag();
             RestartSpawn();
             tBadge.gameObject.SetActive(true);
+            Coin3.gameObject.SetActive(true);
             yield return new WaitForSeconds(waitTime);
             spawnInterval = 0.6f;
             RestartSpawn();
@@ -116,7 +130,7 @@ public class NoteSpawnerUI : MonoBehaviourPunCallbacks
             tBadge.gameObject.SetActive(false);
         }
 
-        else if (points >= 80)
+        else if (points >= 400)
         {
             FullPointsFunction();
             // Destroy(canvas);
@@ -127,7 +141,28 @@ public class NoteSpawnerUI : MonoBehaviourPunCallbacks
     {
         if (pointsText != null)
         {
-            pointsText.text = "Score: " + points;
+            pointsText.text = points + "X";
+        }
+
+        if (fillingImage != null)
+        {
+            if (0 <= points && points <= 55)
+            {
+                fillingImage.fillAmount = points / 285.7f;
+            }
+            else if (56 <= points && points <= 105)
+            {
+                fillingImage.fillAmount = points / 250f;
+            }
+            else if (106 <= points && points <= 205)
+            {
+                fillingImage.fillAmount = points / 303f;
+            }
+            else if (206 <= points)
+            {
+                fillingImage.fillAmount = points / 400f;
+            }
+            
         }
     }
 
@@ -215,6 +250,7 @@ public class NoteSpawnerUI : MonoBehaviourPunCallbacks
             FoPointsBool = true;
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
+            Coin4.gameObject.SetActive(true);
         }
     }
 
