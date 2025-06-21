@@ -434,6 +434,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 788717418409261434, guid: e617104266ea2cf4fb3f1934efa56345, type: 3}
+      propertyPath: noteScript
+      value: 
+      objectReference: {fileID: -6266338649946392891, guid: ffedb7c78e98e8f47b9efe3466761f25, type: 3}
     - target: {fileID: 3446319923237703768, guid: e617104266ea2cf4fb3f1934efa56345, type: 3}
       propertyPath: m_Type
       value: 0

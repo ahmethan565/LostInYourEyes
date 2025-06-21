@@ -9,6 +9,9 @@ public class Note : MonoBehaviour
 
     public float missDetectFloat;
 
+    [Header("missPoint")]
+    public int missPoint = -5; 
+
     void Start()
     {
         Transform column = transform.parent;
@@ -32,8 +35,7 @@ public class Note : MonoBehaviour
 
         if (transform.position.y < missThresholdY)
         {
-            Debug.Log("YOU MISSED!" + assignedKey);
-            NoteSpawnerUI.Instance.AddPoints(-5);
+            NoteSpawnerUI.Instance.AddPoints(missPoint);
             FeedbackUIController.Instance?.ShowFeedback(Color.red, assignedKey);
             Destroy(gameObject);
         }

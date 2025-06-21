@@ -40,6 +40,8 @@ public class NoteSpawnerUI : MonoBehaviourPunCallbacks
     public TMP_Text sBadge;
     public TMP_Text tBadge;
 
+    public GameObject youWon;
+
     private Canvas canvas;
 
     [Header("E")]
@@ -48,7 +50,6 @@ public class NoteSpawnerUI : MonoBehaviourPunCallbacks
     public GameObject Coin3;
     public GameObject Coin4;
     public Image fillingImage;
-
 
     public GameObject fullPointsPanel;
 
@@ -65,6 +66,12 @@ public class NoteSpawnerUI : MonoBehaviourPunCallbacks
         StartSpawn();
         points = 0;
         canvas = GetComponentInParent<Canvas>();
+        PhotonNetwork.AutomaticallySyncScene = true;
+
+        if (PhotonNetwork.IsMasterClient)
+        {
+            PhotonNetwork.Instantiate("organGameManager", Vector3.zero, Quaternion.identity);
+        }
     }
 
     public void AddPoints(float amount)
@@ -75,9 +82,8 @@ public class NoteSpawnerUI : MonoBehaviourPunCallbacks
             points = 0;
         }
         UpdateScoreUI();
-        Debug.Log(points);
 
-        if (points >= 400 && !PhotonNetwork.LocalPlayer.CustomProperties.ContainsKey("Reached400"))
+        if (points >= 30 && !PhotonNetwork.LocalPlayer.CustomProperties.ContainsKey("Reached400"))
         {
             ExitGames.Client.Photon.Hashtable props = new ExitGames.Client.Photon.Hashtable() { { "Reached400", true } };
             PhotonNetwork.LocalPlayer.SetCustomProperties(props);
@@ -91,49 +97,51 @@ public class NoteSpawnerUI : MonoBehaviourPunCallbacks
 
         if (points >= 50 && FPointsBool == false)
         {
-            spawnInterval = waitTime;
-            DestroyAllWithTag();
-            RestartSpawn();
+            // spawnInterval = waitTime;
+            // DestroyAllWithTag();
+            // RestartSpawn();
             fBadge.gameObject.SetActive(true);
             Coin1.gameObject.SetActive(true);
-            yield return new WaitForSeconds(waitTime);
+            // yield return new WaitForSeconds(waitTime);
             spawnInterval = 0.8f;
             RestartSpawn();
             FPointsBool = true;
+            yield return new WaitForSeconds(waitTime);
             fBadge.gameObject.SetActive(false);
         }
         else if (points >= 100 && SPointsBool == false)
         {
-            spawnInterval = waitTime;
-            DestroyAllWithTag();
-            RestartSpawn();
+            // spawnInterval = waitTime;
+            // DestroyAllWithTag();
+            // RestartSpawn();
             sBadge.gameObject.SetActive(true);
             Coin2.gameObject.SetActive(true);
-            yield return new WaitForSeconds(waitTime);
+            // yield return new WaitForSeconds(waitTime);
             spawnInterval = 0.7f;
             RestartSpawn();
             SPointsBool = true;
+            yield return new WaitForSeconds(waitTime);
             sBadge.gameObject.SetActive(false);
         }
 
         else if ((points == 200 && TPointsBool == false) || (points == 205 && TPointsBool == false))
         {
-            spawnInterval = waitTime;
-            DestroyAllWithTag();
-            RestartSpawn();
+            // spawnInterval = waitTime;
+            // DestroyAllWithTag();
+            // RestartSpawn();
             tBadge.gameObject.SetActive(true);
             Coin3.gameObject.SetActive(true);
-            yield return new WaitForSeconds(waitTime);
+            // yield return new WaitForSeconds(waitTime);
             spawnInterval = 0.6f;
             RestartSpawn();
             TPointsBool = true;
+            yield return new WaitForSeconds(waitTime);
             tBadge.gameObject.SetActive(false);
         }
 
-        else if (points >= 400)
+        else if (points >= 70)
         {
             FullPointsFunction();
-            // Destroy(canvas);
         }
     }
 
@@ -207,40 +215,6 @@ public class NoteSpawnerUI : MonoBehaviourPunCallbacks
         }
     }
 
-    public override void OnPlayerPropertiesUpdate(Player targetPlayer, ExitGames.Client.Photon.Hashtable changedProps)
-    {
-        if (changedProps.ContainsKey("Reached400"))
-        {
-            CheckIfBothPlayersReached400();
-        }
-    }
-
-    private void CheckIfBothPlayersReached400()
-    {
-        bool allReached = true;
-        foreach (Player player in PhotonNetwork.PlayerList)
-        {
-            if (!player.CustomProperties.TryGetValue("Reached400", out object value) || !(bool)value)
-            {
-                allReached = false;
-                break;
-            }
-        }
-
-        if (allReached)
-        {
-            photonView.RPC("PuzzleSolved", RpcTarget.All);
-            Destroy(canvas);
-        }
-    }
-
-    [PunRPC]
-    void PuzzleSolved()
-    {
-        Debug.Log("Both two players reached 400 points. pzulle solved.");
-
-    }
-
     void FullPointsFunction()
     {
         if (!FoPointsBool)
@@ -253,6 +227,7 @@ public class NoteSpawnerUI : MonoBehaviourPunCallbacks
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
             Coin4.gameObject.SetActive(true);
+            youWon.SetActive(true);
         }
     }
 

@@ -42,6 +42,7 @@ MonoBehaviour:
   - ClientReady
   - RPCToggleObject
   - RPCToggleDoor
+  - PuzzleSolved
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

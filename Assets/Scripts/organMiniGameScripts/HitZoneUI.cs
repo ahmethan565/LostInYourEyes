@@ -6,6 +6,9 @@ public class HitZoneUI : MonoBehaviour
 {
     public string key;
 
+    [Header("addPoint")]
+    public int addPoint = 10;
+
     void Update()
     {
         // Debug.Log("A");
@@ -22,8 +25,7 @@ public class HitZoneUI : MonoBehaviour
                     float distance = Mathf.Abs(child.localPosition.y - transform.localPosition.y);
                     if (distance < 20f)
                     {
-                        Debug.Log("HIT!");
-                        NoteSpawnerUI.Instance.AddPoints(10);
+                        NoteSpawnerUI.Instance.AddPoints(addPoint);
                         FeedbackUIController.Instance?.ShowFeedback(Color.green, note.assignedKey);
                         Destroy(child.gameObject);
                         break;
