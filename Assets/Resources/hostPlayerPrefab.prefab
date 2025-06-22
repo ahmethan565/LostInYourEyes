@@ -362,6 +362,7 @@ GameObject:
   - component: {fileID: 3396227527163483773}
   - component: {fileID: 8241116529341834465}
   - component: {fileID: 345686385164921489}
+  - component: {fileID: 1697586423167982183}
   m_Layer: 0
   m_Name: hostPlayerPrefab
   m_TagString: Player
@@ -500,6 +501,18 @@ MonoBehaviour:
   defaultSize: {x: 5, y: 5}
   highlightedSize: {x: 10, y: 10}
   interactionUI: {fileID: 8241116529341834465}
+--- !u!114 &1697586423167982183
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7308634844873571395}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ddee431a9b9ba449a65ff44f60dd191, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &8809591538172285921
 GameObject:
   m_ObjectHideFlags: 0
