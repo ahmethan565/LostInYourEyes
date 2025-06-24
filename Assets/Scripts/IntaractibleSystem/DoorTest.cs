@@ -51,4 +51,9 @@ public class DoorToggle : MonoBehaviour, IInteractable
             doorTransform.DORotateQuaternion(targetRotation, tweenDuration).SetEase(Ease.InOutQuad);
         }
     }
+
+    public void InteractWithItem(GameObject heldItemGameObject)
+    {
+        throw new System.NotImplementedException();
+    }
 }

@@ -2567,7 +2567,7 @@ MonoBehaviour:
   player2StatusText: {fileID: 1857970109}
   closeRoomButton: {fileID: 6804469410596792830}
   leaveRoomButton: {fileID: 6804469411070696626}
-  gameSceneName: Puzzle1
+  gameSceneName: Game
 --- !u!4 &1442184256
 Transform:
   m_ObjectHideFlags: 0
@@ -2793,7 +2793,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.0020937, y: 0}
+  m_AnchoredPosition: {x: -0.0020942688, y: 0}
   m_SizeDelta: {x: 116.08, y: 115.88}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1593446874

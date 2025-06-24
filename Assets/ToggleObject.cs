@@ -46,4 +46,9 @@ public class ToggleObject : MonoBehaviour, IInteractable
             targetObject.SetActive(isOn);
         }
     }
+
+    public void InteractWithItem(GameObject heldItemGameObject)
+    {
+        throw new System.NotImplementedException();
+    }
 }
