@@ -51,13 +51,26 @@ public class PlayerHeadBob : MonoBehaviourPunCallbacks
     // Event for footstep sounds (optional)
     public delegate void FootstepEventHandler();
     public static event FootstepEventHandler OnFootstep;
+    [Header("Speed Thresholds")]
+    [Tooltip("Minimum speed to be considered walking.")]
+    [SerializeField] private float walkSpeedThreshold = 0.5f; // Yürüme hızı eşiği
+    [Tooltip("Minimum speed to be considered running.")]
+    [SerializeField] private float runSpeedThreshold = 3.0f;  // Koşma hızı eşiği (karakter hızınıza göre ayarlayın)
+
+    // isRunning ve isAiming'i artık public olarak dışarıdan set etmenize gerek kalmayacak,
+    // ancak hala dışarıdan kontrol etmek isterseniz public kalabilirler.
+    // Şimdilik onları private yapıp internal olarak kontrol edelim:
+    // public bool isAiming = false; // Dışarıdan kontrol edilecekse public kalsın
+    // public bool isRunning = false; // Bu artık internal olarak belirlenecek.
+
+    // Eğer isAiming'i hareket betiğinizden ayarlıyorsanız, public olarak kalmalı.
+    [Tooltip("Set this to true when the player is aiming down sights.")]
 
     private void Start()
     {
-        // Only apply head bob to the local player
         if (!photonView.IsMine)
         {
-            enabled = false; // Disable the script for remote players
+            enabled = false;
             return;
         }
 
@@ -70,23 +83,26 @@ public class PlayerHeadBob : MonoBehaviourPunCallbacks
 
         if (characterController == null)
         {
-            Debug.LogWarning("PlayerHeadBob: CharacterController is not assigned. Ensure GetCurrentSpeed method is adapted for your custom controller.", this);
+            // Debug.LogWarning("PlayerHeadBob: CharacterController is not assigned. Ensure GetCurrentSpeed method is adapted for your custom controller.", this);
+            // Karakter kontrolcüsü yoksa GetCurrentSpeed'in 0 döneceğini varsayalım
+            // Bu uyarıyı kaldırabilir veya başka bir mesaj verebiliriz.
+            Debug.LogError("PlayerHeadBob: CharacterController is not assigned! Head bobbing cannot determine speed.", this);
+            enabled = false; // Karakter hızını alamıyorsak kafa sallama çalışmaz.
+            return;
         }
 
-        // Store the initial local position of the camera
-        // This assumes the camera is a child of the player character and its local position is relevant.
         if (initialCameraLocalPosition == Vector3.zero)
         {
             initialCameraLocalPosition = cameraTransform.localPosition;
         }
 
         _targetCameraLocalPosition = initialCameraLocalPosition;
-        _wasGrounded = characterController != null ? characterController.isGrounded : true; // Assume grounded if no controller
+        _wasGrounded = characterController.isGrounded;
     }
 
     private void Update()
     {
-        if (!photonView.IsMine) return; // Double-check for safety
+        if (!photonView.IsMine) return;
 
         HandleJumpLandingBob();
         ApplyHeadBob();
@@ -96,46 +112,47 @@ public class PlayerHeadBob : MonoBehaviourPunCallbacks
     {
         if (isAiming)
         {
-            // Smoothly return to initial position when aiming
             _targetCameraLocalPosition = initialCameraLocalPosition;
             cameraTransform.localPosition = Vector3.SmoothDamp(cameraTransform.localPosition, _targetCameraLocalPosition, ref _currentCameraLocalVelocity, smoothTime);
-            _timer = 0; // Reset timer to prevent jump when stopping ADS
+            _timer = 0;
             return;
         }
 
         float speed = GetCurrentSpeed();
 
-        if (speed > 0.1f) // Player is moving
+        // Koşma durumunu hız eşiklerine göre belirle
+        bool isCurrentlyRunning = (speed >= runSpeedThreshold);
+        bool isCurrentlyWalking = (speed >= walkSpeedThreshold && speed < runSpeedThreshold);
+
+        if (isCurrentlyWalking || isCurrentlyRunning) // Player is moving
         {
-            float currentAmplitude = isRunning ? runBobAmplitude : walkBobAmplitude;
-            float currentFrequency = isRunning ? runBobFrequency : walkBobFrequency;
+            float currentAmplitude = isCurrentlyRunning ? runBobAmplitude : walkBobAmplitude;
+            float currentFrequency = isCurrentlyRunning ? runBobFrequency : walkBobFrequency;
 
             _timer += Time.deltaTime * currentFrequency;
 
             float xBob = Mathf.Cos(_timer) * currentAmplitude;
-            float yBob = Mathf.Sin(_timer * 2) * currentAmplitude * 0.8f; // Vertical bob is usually slightly less pronounced and twice the frequency
+            float yBob = Mathf.Sin(_timer * 2) * currentAmplitude * 0.8f;
 
             _targetCameraLocalPosition = initialCameraLocalPosition + new Vector3(xBob, yBob, 0f);
 
             // Optional: Footstep sound integration
-            // This will trigger a footstep sound at the peak/trough of the bob
-            if (Mathf.Abs(_timer % (Mathf.PI * 2)) < (currentFrequency * Time.deltaTime) * 0.5f) // Check if timer is near a full cycle
+            if (Mathf.Abs(_timer % (Mathf.PI * 2)) < (currentFrequency * Time.deltaTime) * 0.5f)
             {
                 OnFootstep?.Invoke();
             }
         }
-        else // Player is idle
+        else // Player is idle (speed < walkSpeedThreshold)
         {
             _targetCameraLocalPosition = initialCameraLocalPosition;
-            _timer = 0; // Reset timer when idle to prevent immediate bob when starting to move
+            _timer = 0;
         }
 
-        // Apply jump land bob on top of regular bob
         if (_jumpLandTimer > 0)
         {
             float landBobProgress = 1 - (_jumpLandTimer / jumpLandBobDuration);
-            float landBobOffset = Mathf.Sin(landBobProgress * Mathf.PI) * jumpLandBobAmplitude; // Smooth ease-out effect
-            _targetCameraLocalPosition.y -= landBobOffset; // Subtract to move camera down slightly
+            float landBobOffset = Mathf.Sin(landBobProgress * Mathf.PI) * jumpLandBobAmplitude;
+            _targetCameraLocalPosition.y -= landBobOffset;
         }
 
         cameraTransform.localPosition = Vector3.SmoothDamp(cameraTransform.localPosition, _targetCameraLocalPosition, ref _currentCameraLocalVelocity, smoothTime);
@@ -145,15 +162,10 @@ public class PlayerHeadBob : MonoBehaviourPunCallbacks
     {
         if (characterController != null)
         {
-            // Use characterController.velocity to get the actual movement speed
-            // We only care about horizontal movement for bobbing
             Vector3 horizontalVelocity = new Vector3(characterController.velocity.x, 0, characterController.velocity.z);
             return horizontalVelocity.magnitude;
         }
-        // If you're using a custom controller, you'll need to replace this
-        // with your own logic to get the player's current ground speed.
-        // For example, if you have a custom movement script, you might expose a public property for speed.
-        return 0f; // Return 0 if no character controller is assigned and no custom logic is provided.
+        return 0f;
     }
 
     private void HandleJumpLandingBob()
@@ -164,7 +176,6 @@ public class PlayerHeadBob : MonoBehaviourPunCallbacks
 
         if (!_wasGrounded && isCurrentlyGrounded)
         {
-            // Player just landed
             _jumpLandTimer = jumpLandBobDuration;
         }
 
@@ -176,19 +187,19 @@ public class PlayerHeadBob : MonoBehaviourPunCallbacks
         _wasGrounded = isCurrentlyGrounded;
     }
 
-    // Call this method from your player movement script when the player starts running
-    public void SetRunning(bool running)
-    {
-        isRunning = running;
-    }
+    // isRunning'i artık doğrudan bu script belirlediği için bu metot gereksiz hale gelebilir.
+    // Ancak dışarıdan kontrol etmeniz gerekiyorsa yine de kalabilir.
+    // Eğer yalnızca hız eşikleriyle belirlenecekse, bu metodu kaldırın.
+    // public void SetRunning(bool running)
+    // {
+    //     // isRunning = running; // Artık dışarıdan set edilmesine gerek yok
+    // }
 
-    // Call this method from your aiming script when the player starts/stops aiming
     public void SetAiming(bool aiming)
     {
         isAiming = aiming;
     }
 
-    // Optional: Reset the bobbing state
     public void ResetBobbing()
     {
         _timer = 0;

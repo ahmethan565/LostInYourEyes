@@ -20,7 +20,7 @@ public class FPSPlayerController : MonoBehaviourPun, IPunObservable
     [Header("Sprint Ayarları")]
     public float sprintDuration = 0f;
     public float slideTriggerTime = 1.0f; // Örn: 1 saniye sonra slide açılabilir
-    
+
     [Header("Kamera Ayarları")]
     public float mouseSensitivity = 100f;
     public Transform cameraRoot;
@@ -115,13 +115,22 @@ public class FPSPlayerController : MonoBehaviourPun, IPunObservable
     // Sadece yatay/dikey input vektörünü döndüren yardımcı metot (public)
     public Vector3 GetInputMoveVector()
     {
+        // Menü açık mı kontrol et
+        bool menuIsOpen = PauseMenuManager.Instance != null && PauseMenuManager.Instance.isMenuOpen;
+
+        // Eğer menü açıksa, hareket inputu alma
+        if (menuIsOpen)
+        {
+            return Vector3.zero;
+        }
+
+        // Menü kapalıysa normal input alımına devam et
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
         Vector3 move = (transform.right * h + transform.forward * v);
         if (move.magnitude > 1f) move.Normalize();
         return move * moveSpeed;
     }
-
     // Sadece zıplama gücünü uygulayan yardımcı metot (public)
     public void HandleJumpInput()
     {
