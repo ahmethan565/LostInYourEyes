@@ -15,7 +15,7 @@ public class TabController : MonoBehaviour, IPointerClickHandler, IPointerEnterH
     public float pressedY = -10f;
     public float duration = 0.25f;
     public bool selectAndAutoDeselect = false;
-    public bool enableHoverAnimation = false; // <-- Yeni özellik
+    public bool enableHoverAnimation = false;
 
     private Vector2 originalPos;
     private bool isSelected;
@@ -51,7 +51,7 @@ public class TabController : MonoBehaviour, IPointerClickHandler, IPointerEnterH
     public void OnPointerClick(PointerEventData eventData)
     {
         if (enableHoverAnimation)
-            return; // Hover aktifse tıklama animasyonu oynatma
+            return; // Hover modu aktifse tıklama animasyonu çalışmasın
 
         if (selectAndAutoDeselect)
         {
@@ -101,6 +101,9 @@ public class TabController : MonoBehaviour, IPointerClickHandler, IPointerEnterH
 
     void SelectThis()
     {
+        if (enableHoverAnimation)
+            return; // Hover modu aktifse manuel seçim yapılmasın
+
         isSelected = true;
 
         foreach (var tab in tabGroups[groupName])
@@ -116,6 +119,23 @@ public class TabController : MonoBehaviour, IPointerClickHandler, IPointerEnterH
     {
         isSelected = false;
         isHovering = false;
+
         backgroundSelected.DOAnchorPosY(originalPos.y, duration).SetEase(Ease.OutCubic);
+    }
+    private void OnDisable()
+    {
+        // Panel devre dışı bırakıldığında veya kapatıldığında
+        if (backgroundSelected != null)
+        {
+            // Tüm DOTween animasyonlarını durdur
+            backgroundSelected.DOKill(true); // 'true' ile animasyonu öldürür ve mevcut değeri bitirir (hedef değere ayarlar)
+
+            // Pozisyonu doğrudan orijinaline sıfırla
+            backgroundSelected.anchoredPosition = originalPos;
+
+            // Seçim ve hover durumlarını sıfırla
+            isSelected = false;
+            isHovering = false;
+        }
     }
 }

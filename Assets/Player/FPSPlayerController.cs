@@ -1,6 +1,5 @@
 using UnityEngine;
 using Photon.Pun;
-using UnityEngine.InputSystem.XR.Haptics;
 
 public class FPSPlayerController : MonoBehaviourPun, IPunObservable
 {
@@ -21,6 +20,7 @@ public class FPSPlayerController : MonoBehaviourPun, IPunObservable
     [Header("Sprint Ayarları")]
     public float sprintDuration = 0f;
     public float slideTriggerTime = 1.0f; // Örn: 1 saniye sonra slide açılabilir
+    
     [Header("Kamera Ayarları")]
     public float mouseSensitivity = 100f;
     public Transform cameraRoot;
