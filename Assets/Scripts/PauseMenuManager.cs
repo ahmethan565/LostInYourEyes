@@ -1,24 +1,24 @@
 using TMPro;
 using UnityEngine;
-using System.Linq;
+using UnityEngine.SceneManagement;
 
 public class PauseMenuManager : MonoBehaviour
 {
     // Singleton Instance
     private static PauseMenuManager _instance;
-    public static PauseMenuManager Instance // Global erişim noktası
+    public static PauseMenuManager Instance // Global eriÅŸim noktasÄ±
     {
         get
         {
-            // Eğer instance yoksa bulmaya çalış
+            // EÄŸer instance yoksa bulmaya Ã§alÄ±ÅŸ
             if (_instance == null)
             {
                 _instance = FindAnyObjectByType<PauseMenuManager>();
 
-                // Hala yoksa hata ver (sahneye eklenmemiş demektir)
+                // Hala yoksa hata ver (sahneye eklenmemiÅŸ demektir)
                 if (_instance == null)
                 {
-                    Debug.LogError("PauseMenuManager instance sahnede bulunamadı!");
+                    Debug.LogError("PauseMenuManager instance sahnede bulunamadÄ±!");
                 }
             }
             return _instance;
@@ -36,18 +36,18 @@ public class PauseMenuManager : MonoBehaviour
     [SerializeField] private GameObject graphicsPanel;
     [SerializeField] private GameObject audioPanel;
     [SerializeField] private GameObject controlsPanel;
-    private GameObject currentActivePanel; // SerializeField olmasına gerek yok
+    private GameObject currentActivePanel; // SerializeField olmasÄ±na gerek yok
 
     [Header("SystemInfos")]
     [SerializeField] private TextMeshProUGUI displayAdapterText;
     [SerializeField] private TextMeshProUGUI monitorText;
 
-    // MENÜ DURUMU ARTIK PUBLIC
+    // MENÃœ DURUMU ARTIK PUBLIC
     public bool isMenuOpen = false;
 
     void Awake()
     {
-        // Singleton kurulumu: Sadece bir instance olmasına izin ver
+        // Singleton kurulumu: Sadece bir instance olmasÄ±na izin ver
         if (_instance != null && _instance != this)
         {
             // Zaten bir instance varsa bu yenisini yok et
@@ -57,7 +57,7 @@ public class PauseMenuManager : MonoBehaviour
         {
             // Bu ilk instance ise onu _instance olarak ayarla
             _instance = this;
-            // İsteğe bağlı: Sahneler arası geçişte yok olmaması için
+            // Ä°steÄŸe baÄŸlÄ±: Sahneler arasÄ± geÃ§iÅŸte yok olmamasÄ± iÃ§in
             // DontDestroyOnLoad(gameObject);
         }
     }
@@ -65,54 +65,54 @@ public class PauseMenuManager : MonoBehaviour
 
     void Start()
     {
-        // Başlangıçta tüm menü panellerinin kapalı olduğundan emin olalım
+        // BaÅŸlangÄ±Ã§ta tÃ¼m menÃ¼ panellerinin kapalÄ± olduÄŸundan emin olalÄ±m
         UiBackground.SetActive(false);
         mainEscPanel.SetActive(false);
         optionsMenuPanel.SetActive(false);
         quitConfirmationPanel.SetActive(false);
 
-        // Ekran kartı adı
+        // Ekran kartÄ± adÄ±
         string gpuName = SystemInfo.graphicsDeviceName;
         if (displayAdapterText != null) displayAdapterText.text = gpuName;
 
-        // Monitör bilgisi (çözünürlük + tazeleme oranı)
+        // MonitÃ¶r bilgisi (Ã§Ã¶zÃ¼nÃ¼rlÃ¼k + tazeleme oranÄ±)
         Resolution res = Screen.currentResolution;
-        // RefreshRateRatio kullanmak daha doğru, eski refreshRate int
+        // RefreshRateRatio kullanmak daha doÄŸru, eski refreshRate int
         double hz = res.refreshRateRatio.value;
 
-        string monitorInfo = $"{res.width}x{res.height} @ {(int)hz}Hz";  // örnek çıktı: 1920x1080 @ 144Hz, int'e çevirince küsuratı atarız
+        string monitorInfo = $"{res.width}x{res.height} @ {(int)hz}Hz";Â  // Ã¶rnek Ã§Ä±ktÄ±: 1920x1080 @ 144Hz, int'e Ã§evirince kÃ¼suratÄ± atarÄ±z
         if (monitorText != null) monitorText.text = monitorInfo;
     }
 
     void Update()
     {
-        // Sadece yerel oyuncu ESC menüsünü açabilmeli.
-        // Bu script sahnede her zaman olduğu için IsMine kontrolünü burada yapamayız.
-        // ESC tuşuna basıldığında menüyü aç/kapa logic'i her zaman çalışmalı,
-        // ancak karakterin hareketinin durdurulması FPSPlayerController içinde IsMine kontrolü ile yapılacak.
-        // Eğer menü açma/kapama sadece yerel oyuncu için olmalıysa, bu Update metodunun
-        // FPSPlayerController'daki IsMine bloğuna taşınması daha mantıklı olur.
-        // Ama menü yönetimi UI scriptinde kalabilir, sadece ToggleMainEscMenu metodu çağrılır.
+        // Sadece yerel oyuncu ESC menÃ¼sÃ¼nÃ¼ aÃ§abilmeli.
+        // Bu script sahnede her zaman olduÄŸu iÃ§in IsMine kontrolÃ¼nÃ¼ burada yapamayÄ±z.
+        // ESC tuÅŸuna basÄ±ldÄ±ÄŸÄ±nda menÃ¼yÃ¼ aÃ§/kapa logic'i her zaman Ã§alÄ±ÅŸmalÄ±,
+        // ancak karakterin hareketinin durdurulmasÄ± FPSPlayerController iÃ§inde IsMine kontrolÃ¼ ile yapÄ±lacak.
+        // EÄŸer menÃ¼ aÃ§ma/kapama sadece yerel oyuncu iÃ§in olmalÄ±ysa, bu Update metodunun
+        // FPSPlayerController'daki IsMine bloÄŸuna taÅŸÄ±nmasÄ± daha mantÄ±klÄ± olur.
+        // Ama menÃ¼ yÃ¶netimi UI scriptinde kalabilir, sadece ToggleMainEscMenu metodu Ã§aÄŸrÄ±lÄ±r.
 
-        // ESC tuşuna basıldığında menü navigasyonu
+        // ESC tuÅŸuna basÄ±ldÄ±ÄŸÄ±nda menÃ¼ navigasyonu
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            if (quitConfirmationPanel.activeSelf) // Önce onay paneli açık mı?
+            if (quitConfirmationPanel.activeSelf) // Ã–nce onay paneli aÃ§Ä±k mÄ±?
             {
                 CancelQuit(); // Onay panelini kapat
             }
-            else if (optionsMenuPanel.activeSelf) // Seçenekler paneli açık mı?
+            else if (optionsMenuPanel.activeSelf) // SeÃ§enekler paneli aÃ§Ä±k mÄ±?
             {
-                HideOptionsPanelAndShowMainEsc(); // Seçenekleri kapat, ana menüye dön
+                HideOptionsPanelAndShowMainEsc(); // SeÃ§enekleri kapat, ana menÃ¼ye dÃ¶n
             }
-            else // Hiçbiri açık değilse ana menüyü aç/kapa
+            else // HiÃ§biri aÃ§Ä±k deÄŸilse ana menÃ¼yÃ¼ aÃ§/kapa
             {
-                // ESC tuşuna basıldığında ana menüyü sadece yerel oyuncu açmalı/kapamalı.
-                // Bu kontrolün FPSPlayerController'da yapılıp buradaki ToggleMainEscMenu() metodunun çağrılması daha temiz olurdu.
-                // Ancak mevcut kod yapına uyum sağlamak için buraya bir örnek ekleyelim,
-                // fakat bu scriptin sahnede sadece 1 tane olduğundan ve
-                // ESC basıldığında sadece o bilgisayarda çalıştığından emin olunmalı.
-                // Multiplayer'da bu, her oyuncunun kendi bilgisayarında kendi menüsünü açması için doğru yerdir.
+                // ESC tuÅŸuna basÄ±ldÄ±ÄŸÄ±nda ana menÃ¼yÃ¼ sadece yerel oyuncu aÃ§malÄ±/kapamalÄ±.
+                // Bu kontrolÃ¼n FPSPlayerController'da yapÄ±lÄ±p buradaki ToggleMainEscMenu() metodunun Ã§aÄŸrÄ±lmasÄ± daha temiz olurdu.
+                // Ancak mevcut kod yapÄ±na uyum saÄŸlamak iÃ§in buraya bir Ã¶rnek ekleyelim,
+                // fakat bu scriptin sahnede sadece 1 tane olduÄŸundan ve
+                // ESC basÄ±ldÄ±ÄŸÄ±nda sadece o bilgisayarda Ã§alÄ±ÅŸtÄ±ÄŸÄ±ndan emin olunmalÄ±.
+                // Multiplayer'da bu, her oyuncunun kendi bilgisayarÄ±nda kendi menÃ¼sÃ¼nÃ¼ aÃ§masÄ± iÃ§in doÄŸru yerdir.
                 ToggleMainEscMenu();
             }
         }
@@ -120,121 +120,125 @@ public class PauseMenuManager : MonoBehaviour
 
     public void ToggleMainEscMenu()
     {
-        // isMenuOpen değişkenini değiştir
+        // isMenuOpen deÄŸiÅŸkenini deÄŸiÅŸtir
         isMenuOpen = !isMenuOpen;
 
-        // Panelleri durumuna göre aktif/deaktif et
+        // Panelleri durumuna gÃ¶re aktif/deaktif et
         mainEscPanel.SetActive(isMenuOpen);
         UiBackground.SetActive(isMenuOpen);
 
-        // Fare imlecini yönet
+        // Fare imlecini yÃ¶net
         if (isMenuOpen)
         {
-            Cursor.lockState = CursorLockMode.None; // İmleci serbest bırak
-            Cursor.visible = true; // İmleci görünür yap
-            Debug.Log("ESC Menü Açıldı");
-            // Time.timeScale'i 0 yapmak genellikle singleplayer oyunlarda yapılır.
-            // Multiplayer'da timeScale'i değiştirmek genellikle sorun yaratır.
-            // Eğer multiplayer'da duraklatma (pause) yapmak istiyorsanız,
-            // bu durumu ağ üzerinden senkronize etmeniz ve oyuncu inputunu/mantığını
-            // duraklatma durumuna göre yönetmeniz gerekir.
-            // Şimdilik Time.timeScale dokunmuyoruz.
+            Cursor.lockState = CursorLockMode.None; // Ä°mleci serbest bÄ±rak
+            Cursor.visible = true; // Ä°mleci gÃ¶rÃ¼nÃ¼r yap
+            Debug.Log("ESC MenÃ¼ AÃ§Ä±ldÄ±");
+            // Time.timeScale'i 0 yapmak genellikle singleplayer oyunlarda yapÄ±lÄ±r.
+            // Multiplayer'da timeScale'i deÄŸiÅŸtirmek genellikle sorun yaratÄ±r.
+            // EÄŸer multiplayer'da duraklatma (pause) yapmak istiyorsanÄ±z,
+            // bu durumu aÄŸ Ã¼zerinden senkronize etmeniz ve oyuncu inputunu/mantÄ±ÄŸÄ±nÄ±
+            // duraklatma durumuna gÃ¶re yÃ¶netmeniz gerekir.
+            // Åimdilik Time.timeScale dokunmuyoruz.
         }
         else
         {
-            // Menü kapandığında imleci tekrar kilitle (FPS oyunları için)
+            // MenÃ¼ kapandÄ±ÄŸÄ±nda imleci tekrar kilitle (FPS oyunlarÄ± iÃ§in)
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
-            Debug.Log("ESC Menü Kapandı");
-            // Time.timeScale = 1f; // Eğer Time.timeScale 0 yapıldıysa geri al
+            Debug.Log("ESC MenÃ¼ KapandÄ±");
+            // Time.timeScale = 1f; // EÄŸer Time.timeScale 0 yapÄ±ldÄ±ysa geri al
         }
     }
 
-    // --- MainEscPanel Buton Fonksiyonları ---
+    // --- MainEscPanel Buton FonksiyonlarÄ± ---
     public void ResumeGame()
     {
-        // Oyunu devam ettirme logic'i (menüyü kapatır)
-        isMenuOpen = false; // Durumu güncelle
+        // Oyunu devam ettirme logic'i (menÃ¼yÃ¼ kapatÄ±r)
+        isMenuOpen = false; // Durumu gÃ¼ncelle
         UiBackground.SetActive(isMenuOpen);
         mainEscPanel.SetActive(false);
-        optionsMenuPanel.SetActive(false);       // Her ihtimale karşı diğer panelleri de kapat
+        optionsMenuPanel.SetActive(false); // Her ihtimale karÅŸÄ± diÄŸer panelleri de kapat
         quitConfirmationPanel.SetActive(false);
 
-        // İmleci tekrar kilitle (FPS oyunları için)
+        // Ä°mleci tekrar kilitle (FPS oyunlarÄ± iÃ§in)
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
-        // Eğer timeScale değiştirildiyse geri al
+        // EÄŸer timeScale deÄŸiÅŸtirildiyse geri al
         // Time.timeScale = 1f;
 
         Debug.Log("Oyun Devam Ediyor");
     }
 
+    public void GoToThisScene(string SceneName)
+    {
+        SceneManager.LoadScene(SceneName);
+    }
     public void ShowOptionsPanel()
     {
         mainEscPanel.SetActive(false);
         optionsMenuPanel.SetActive(true);
-        ShowPanel(displayPanel); // Seçenekler açıldığında Display paneli açık olsun
-        //Debug.Log("Seçenekler Açıldı");
+        ShowPanel(displayPanel); // SeÃ§enekler aÃ§Ä±ldÄ±ÄŸÄ±nda Display paneli aÃ§Ä±k olsun
+        //Debug.Log("SeÃ§enekler AÃ§Ä±ldÄ±");
     }
 
     public void ShowQuitConfirmationPanel()
     {
         quitConfirmationPanel.SetActive(true);
-        // İsteğe bağlı: Ana menüyü arkada bırakabilir veya kapatabilirsiniz.
+        // Ä°steÄŸe baÄŸlÄ±: Ana menÃ¼yÃ¼ arkada bÄ±rakabilir veya kapatabilirsiniz.
         // mainEscPanel.SetActive(false);
-        Debug.Log("Çıkış Onayı Açıldı");
+        Debug.Log("Ã‡Ä±kÄ±ÅŸ OnayÄ± AÃ§Ä±ldÄ±");
     }
 
 
-    // --- OptionsMenuPanel Tab Fonksiyonları ---
+    // --- OptionsMenuPanel Tab FonksiyonlarÄ± ---
     public void OnDisplayButton() => ShowPanel(displayPanel);
     public void OnGraphicsButton() => ShowPanel(graphicsPanel);
     public void OnAudioButton() => ShowPanel(audioPanel);
     public void OnControlsButton() => ShowPanel(controlsPanel);
 
-    // Genel panel gösterme fonksiyonu (tekrarı önler)
+    // Genel panel gÃ¶sterme fonksiyonu (tekrarÄ± Ã¶nler)
     public void ShowPanel(GameObject panelToShow)
     {
         // Aktif paneli kapat
         if (currentActivePanel != null)
             currentActivePanel.SetActive(false);
 
-        // Yeni paneli aç
+        // Yeni paneli aÃ§
         panelToShow.SetActive(true);
-        currentActivePanel = panelToShow; // Aktif paneli güncelle
-        //Debug.Log($"Panel Değişti: {panelToShow.name}");
+        currentActivePanel = panelToShow; // Aktif paneli gÃ¼ncelle
+        //Debug.Log($"Panel DeÄŸiÅŸti: {panelToShow.name}");
     }
 
     // --- OptionsMenuPanel Geri Fonksiyonu ---
     public void HideOptionsPanelAndShowMainEsc()
     {
-        optionsMenuPanel.SetActive(false); // Seçenekleri kapat
-        // currentActivePanel = null; // İsteğe bağlı: Seçeneklerden çıkınca aktif panel referansını temizle
+        optionsMenuPanel.SetActive(false); // SeÃ§enekleri kapat
+        // currentActivePanel = null; // Ä°steÄŸe baÄŸlÄ±: SeÃ§eneklerden Ã§Ä±kÄ±nca aktif panel referansÄ±nÄ± temizle
         if (mainEscPanel != null)
         {
-            mainEscPanel.SetActive(true); // Ana menüyü göster
-            Debug.Log("Seçeneklerden Geri Dönüldü");
+            mainEscPanel.SetActive(true); // Ana menÃ¼yÃ¼ gÃ¶ster
+            Debug.Log("SeÃ§eneklerden Geri DÃ¶nÃ¼ldÃ¼");
         }
         else
         {
-            Debug.Log("Anamenüye Dönüldü");
+            Debug.Log("AnamenÃ¼ye DÃ¶nÃ¼ldÃ¼");
         }
-        // isMenuOpen durumu zaten true olmalı bu noktada
+        // isMenuOpen durumu zaten true olmalÄ± bu noktada
     }
 
 
-    // --- QuitConfirmationPanel Buton Fonksiyonları ---
+    // --- QuitConfirmationPanel Buton FonksiyonlarÄ± ---
     public void ConfirmQuitGame()
     {
-        Debug.Log("Oyundan çıkılıyor...");
+        Debug.Log("Oyundan Ã§Ä±kÄ±lÄ±yor...");
 
-        // ÖNEMLİ: Eğer online bir oyunsa, önce sunucudan düzgün bir şekilde ayrılın!
+        // Ã–NEMLÄ°: EÄŸer online bir oyunsa, Ã¶nce sunucudan dÃ¼zgÃ¼n bir ÅŸekilde ayrÄ±lÄ±n!
         // PhotonNetwork.LeaveRoom(); // veya uygun Photon metodu
 
-        Application.Quit(); // Uygulamayı kapatır
+        Application.Quit(); // UygulamayÄ± kapatÄ±r
 
-        // Editörde çalışırken oyunu durdurmak için (build alınca bu kısım çalışmaz)
+        // EditÃ¶rde Ã§alÄ±ÅŸÄ±rken oyunu durdurmak iÃ§in (build alÄ±nca bu kÄ±sÄ±m Ã§alÄ±ÅŸmaz)
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #endif
@@ -242,10 +246,10 @@ public class PauseMenuManager : MonoBehaviour
 
     public void CancelQuit()
     {
-        quitConfirmationPanel.SetActive(false); // Çıkış onay panelini kapat
-        // İsteğe bağlı: Ana menüyü gizlediyseniz tekrar gösterin
+        quitConfirmationPanel.SetActive(false); // Ã‡Ä±kÄ±ÅŸ onay panelini kapat
+        // Ä°steÄŸe baÄŸlÄ±: Ana menÃ¼yÃ¼ gizlediyseniz tekrar gÃ¶sterin
         // mainEscPanel.SetActive(true);
-        Debug.Log("Çıkış İptal Edildi");
-        // isMenuOpen durumu zaten true olmalı bu noktada
+        Debug.Log("Ã‡Ä±kÄ±ÅŸ Ä°ptal Edildi");
+        // isMenuOpen durumu zaten true olmalÄ± bu noktada
     }
 }

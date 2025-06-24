@@ -680,7 +680,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 3a44577b5cc0a2d49923dafabb385f5b, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 0147618e8c8538747b3c6f6f83e01ea1, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -3244,6 +3244,10 @@ PrefabInstance:
     - target: {fileID: 4895355084262384108, guid: ba6d0e6a239cf86478908ce4e60491ae, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
       value: MenuManager, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 5082654935709921923, guid: ba6d0e6a239cf86478908ce4e60491ae, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 138.9
       objectReference: {fileID: 0}
     - target: {fileID: 5231732264760403271, guid: ba6d0e6a239cf86478908ce4e60491ae, type: 3}
       propertyPath: m_AnchorMax.y

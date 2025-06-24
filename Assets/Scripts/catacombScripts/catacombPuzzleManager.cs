@@ -1,7 +1,5 @@
 using UnityEngine;
 using Photon.Pun;
-using Photon.Realtime;
-using Mono.Cecil;
 using System.Collections;
 
 public class catacombPuzzleManager : MonoBehaviourPunCallbacks

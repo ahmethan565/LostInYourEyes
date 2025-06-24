@@ -3,7 +3,7 @@ using UnityEngine.EventSystems;
 using DG.Tweening;
 using System.Collections.Generic;
 
-public class TabController : MonoBehaviour, IPointerClickHandler
+public class TabController : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
 {
     private static Dictionary<string, List<TabController>> tabGroups = new Dictionary<string, List<TabController>>();
 
@@ -14,16 +14,18 @@ public class TabController : MonoBehaviour, IPointerClickHandler
     public string groupName;
     public float pressedY = -10f;
     public float duration = 0.25f;
-    public bool selectAndAutoDeselect = false; // <--- Yeni özellik
+    public bool selectAndAutoDeselect = false;
+    public bool enableHoverAnimation = false; // <-- Yeni Ã¶zellik
 
     private Vector2 originalPos;
     private bool isSelected;
+    private bool isHovering;
 
     void Start()
     {
         if (backgroundSelected == null)
         {
-            Debug.LogError("BackgroundSelected atanmadý!");
+            Debug.LogError("BackgroundSelected atanmadÄ±!");
             return;
         }
 
@@ -35,7 +37,7 @@ public class TabController : MonoBehaviour, IPointerClickHandler
         }
         tabGroups[groupName].Add(this);
 
-        DeselectThis(); // Varsayýlan olarak deselect
+        DeselectThis();
     }
 
     void OnDestroy()
@@ -48,16 +50,17 @@ public class TabController : MonoBehaviour, IPointerClickHandler
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        if (enableHoverAnimation)
+            return; // Hover aktifse tÄ±klama animasyonu oynatma
+
         if (selectAndAutoDeselect)
         {
-            // Diðerlerini deselect et
             foreach (var tab in tabGroups[groupName])
             {
                 if (tab != this)
                     tab.DeselectThis();
             }
 
-            // Kýsa süreliðine seç ve hemen geri kaldýr
             backgroundSelected.DOAnchorPosY(originalPos.y + pressedY, duration / 2f)
                 .SetEase(Ease.OutCubic)
                 .OnComplete(() =>
@@ -78,6 +81,24 @@ public class TabController : MonoBehaviour, IPointerClickHandler
         }
     }
 
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (enableHoverAnimation && !isSelected)
+        {
+            isHovering = true;
+            backgroundSelected.DOAnchorPosY(originalPos.y + pressedY, duration / 2f).SetEase(Ease.OutCubic);
+        }
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        if (enableHoverAnimation && !isSelected && isHovering)
+        {
+            isHovering = false;
+            backgroundSelected.DOAnchorPosY(originalPos.y, duration / 2f).SetEase(Ease.InCubic);
+        }
+    }
+
     void SelectThis()
     {
         isSelected = true;
@@ -94,6 +115,7 @@ public class TabController : MonoBehaviour, IPointerClickHandler
     void DeselectThis()
     {
         isSelected = false;
+        isHovering = false;
         backgroundSelected.DOAnchorPosY(originalPos.y, duration).SetEase(Ease.OutCubic);
     }
 }
