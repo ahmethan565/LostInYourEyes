@@ -46,6 +46,14 @@ MonoBehaviour:
   - SendSelectedTableIndex
   - RPC_SetItemState
   - RPC_SetDoorState
+  - RPC_SetCompleted
+  - RPC_SetRuneItemTransform
+  - RPC_SetRuneTransform
+  - RPC_SetRuneParentAndState
+  - RPC_TryPlaceRune
+  - RPC_PlaceRuneVisuals
+  - RPC_RequestRunePlacement
+  - RPC_TriggerForceDrop
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1
