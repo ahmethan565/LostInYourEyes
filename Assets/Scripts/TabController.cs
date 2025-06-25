@@ -20,6 +20,11 @@ public class TabController : MonoBehaviour, IPointerClickHandler, IPointerEnterH
     private Vector2 originalPos;
     private bool isSelected;
     private bool isHovering;
+    void Awake()
+    {
+        originalPos = backgroundSelected.anchoredPosition;
+        DeselectThis();
+    }
 
     void Start()
     {
@@ -29,7 +34,7 @@ public class TabController : MonoBehaviour, IPointerClickHandler, IPointerEnterH
             return;
         }
 
-        originalPos = backgroundSelected.anchoredPosition;
+        backgroundSelected.anchoredPosition = originalPos;
 
         if (!tabGroups.ContainsKey(groupName))
         {

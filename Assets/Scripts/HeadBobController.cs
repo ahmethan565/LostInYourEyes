@@ -53,7 +53,7 @@ public class PlayerHeadBob : MonoBehaviourPunCallbacks
     public static event FootstepEventHandler OnFootstep;
     [Header("Speed Thresholds")]
     [Tooltip("Minimum speed to be considered walking.")]
-    [SerializeField] private float walkSpeedThreshold = 0.5f; // Yürüme hızı eşiği
+    [SerializeField] private float walkSpeedThreshold = 2f; // Yürüme hızı eşiği
     [Tooltip("Minimum speed to be considered running.")]
     [SerializeField] private float runSpeedThreshold = 3.0f;  // Koşma hızı eşiği (karakter hızınıza göre ayarlayın)
 
@@ -91,10 +91,8 @@ public class PlayerHeadBob : MonoBehaviourPunCallbacks
             return;
         }
 
-        if (initialCameraLocalPosition == Vector3.zero)
-        {
-            initialCameraLocalPosition = cameraTransform.localPosition;
-        }
+        // Start'ta her zaman pozisyonu güncelle:
+        initialCameraLocalPosition = cameraTransform.localPosition;
 
         _targetCameraLocalPosition = initialCameraLocalPosition;
         _wasGrounded = characterController.isGrounded;
@@ -146,6 +144,7 @@ public class PlayerHeadBob : MonoBehaviourPunCallbacks
         {
             _targetCameraLocalPosition = initialCameraLocalPosition;
             _timer = 0;
+            _currentCameraLocalVelocity = Vector3.zero; // Bu satır titremeyi önler
         }
 
         if (_jumpLandTimer > 0)

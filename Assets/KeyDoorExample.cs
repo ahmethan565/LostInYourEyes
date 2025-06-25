@@ -99,7 +99,7 @@ public class KeyDoorExample : MonoBehaviourPunCallbacks, IInteractable
 
     // --- Door Logic ---
 
-    void OpenDoor()
+    public void OpenDoor()
     {
         if (!photonView.IsMine)
         {

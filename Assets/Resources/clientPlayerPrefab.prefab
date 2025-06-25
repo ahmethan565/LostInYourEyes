@@ -1040,7 +1040,7 @@ MonoBehaviour:
   smoothTime: 0.1
   isAiming: 0
   isRunning: 0
-  walkSpeedThreshold: 0.5
+  walkSpeedThreshold: 2
   runSpeedThreshold: 10
 --- !u!114 &1373029480319586104
 MonoBehaviour:

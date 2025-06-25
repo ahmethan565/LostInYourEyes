@@ -116,18 +116,18 @@ public class InteractionManager : MonoBehaviour
     {
         if (currentInteractable != null && Input.GetKeyDown(KeyCode.E))
         {
-            // Get the currently held item from the local player's InventorySystem.
-            GameObject heldItem = null;
-            if (InventorySystem.Instance != null)
-            {
-                heldItem = InventorySystem.Instance.GetHeldItemGameObject();
-            }
+            GameObject heldItem = InventorySystem.Instance?.GetHeldItemGameObject();
 
-            // If we are holding an item, call InteractWithItem, otherwise call standard Interact.
-            // This allows the target object (e.g., a door) to decide how to react.
-            if (heldItem != null)
+            if (heldItem != null && heldItem.activeInHierarchy)
             {
-                currentInteractable.InteractWithItem(heldItem);
+                try
+                {
+                    currentInteractable.InteractWithItem(heldItem);
+                }
+                catch (System.NotImplementedException)
+                {
+                    currentInteractable.Interact(); // fallback
+                }
             }
             else
             {
@@ -135,4 +135,5 @@ public class InteractionManager : MonoBehaviour
             }
         }
     }
+
 }

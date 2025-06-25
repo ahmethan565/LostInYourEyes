@@ -149,4 +149,56 @@ public class InventorySystem : MonoBehaviourPunCallbacks
         heldItemGameObject = null;
         heldItemPickupScript = null;
     }
+    public void ConsumeHeldItem()
+    {
+        if (heldItemGameObject == null)
+        {
+            Debug.LogWarning("No item to consume.");
+            return;
+        }
+
+        if (!photonView.IsMine)
+        {
+            Debug.LogWarning("Tried to consume item on a non-local player.");
+            return;
+        }
+
+        Debug.Log($"Consuming item: {heldItemGameObject.name}");
+
+        // Eğer network objesiyse tüm oyuncular için yok et
+        if (PhotonNetwork.IsConnected && heldItemGameObject.GetComponent<PhotonView>() != null)
+        {
+            PhotonNetwork.Destroy(heldItemGameObject);
+        }
+        else
+        {
+            Destroy(heldItemGameObject);
+        }
+
+        // Temizle
+        heldItemGameObject = null;
+        heldItemPickupScript = null;
+    }
+    
+    public void ForceDropItem()
+    {
+        if (heldItemGameObject == null)
+        {
+            Debug.Log("No item to force drop.");
+            return;
+        }
+
+        if (!photonView.IsMine)
+        {
+            Debug.LogWarning("Tried to force-drop item on non-local player.");
+            return;
+        }
+
+        Debug.Log($"Force-dropping item: {heldItemGameObject.name}");
+
+        // Sadece envanterden çıkar, sahnedeki objeye dokunma
+        heldItemGameObject = null;
+        heldItemPickupScript = null;
+    }
+
 }

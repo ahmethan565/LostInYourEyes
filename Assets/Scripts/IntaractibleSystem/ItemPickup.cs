@@ -1,7 +1,6 @@
 // ItemPickup.cs
 using UnityEngine;
 using Photon.Pun;
-using System.Linq; // Required for LINQ extensions like .ToArray()
 using System.Collections; // For coroutines
 
 // This script is attached to any game object that can be picked up.
@@ -67,8 +66,13 @@ public class ItemPickup : MonoBehaviourPunCallbacks, IInteractable
 
     // --- IInteractable Implementation ---
     // This method is called by your InteractionManager when the player presses 'E'.
+    private float lastInteractTime;
+    private float interactCooldown = 0.5f;
     public void Interact()
     {
+        if (Time.time - lastInteractTime < interactCooldown) return;
+        lastInteractTime = Time.time;
+
         // Early exit if the local player's inventory is full.
         // This prevents unnecessary RPCs or state changes if the player can't pick up anyway.
         if (InventorySystem.Instance != null && InventorySystem.Instance.IsHoldingItem())
@@ -125,10 +129,23 @@ public class ItemPickup : MonoBehaviourPunCallbacks, IInteractable
         // Mark as not held locally.
         IsHeld = false;
 
-        // Use RPC_SetItemState to re-enable visibility and unparenting for all clients.
-        // RpcTarget.AllBuffered ensures late-joining players see the item reappear correctly.
+        // Kameranın baktığı yönü al
+        Transform cam = Camera.main.transform;
+        Vector3 dropForward = cam.forward;
+        dropForward.y = 0; // Yukarı bakıyorsa item zıplamasın, sadece yatay düzlemde yön al
+        dropForward.Normalize();
+
+        // Bırakılacak konumu belirle
+        Vector3 dropOffset = dropForward * 2.4f + Vector3.up * -1.5f; // 1.5 birim ön + hafif yukarı
+        transform.position = cam.position + dropOffset;
+
+        // Dönüşünü de oyuncunun baktığı yöne çevirmek istersen:
+        transform.rotation = Quaternion.LookRotation(dropForward);
+
+        // Ağda bırakılma durumunu bildir
         photonView.RPC("RPC_SetItemState", RpcTarget.AllBuffered, false);
     }
+
 
     // --- IInteractable Implementation ---
     // This method provides text for the UI about the interaction.
@@ -282,26 +299,7 @@ public class ItemPickup : MonoBehaviourPunCallbacks, IInteractable
 
         fallCoroutine = null;
     }
-    public bool testSingle = false;
-    void Start()
-    {
-        if (!PhotonNetwork.IsConnected && testSingle)
-        {
-            PhotonNetwork.ConnectUsingSettings(); // Bu MasterServer'a bağlanır
-        }
-    }
-    public override void OnConnectedToMaster()
-    {
-        // Otomatik lobiye gir
-        PhotonNetwork.JoinLobby();
-    }
-
-    public override void OnJoinedLobby()
-    {
-        // Artık oda oluşturabilirsin
-        PhotonNetwork.CreateRoom("MyRoom");
-    }
-
+    
     public void InteractWithItem(GameObject heldItemGameObject)
     {
         throw new System.NotImplementedException();
